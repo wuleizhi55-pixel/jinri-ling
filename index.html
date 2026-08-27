@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#16120e">
+  <meta name="description" content="今日令 / Today's Order — Core Exec Team 现场指挥板。">
+  <title>今日令 · Today's Order</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=IBM+Plex+Sans:wght@400;500&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #16120e;
+      --ink-lift: #1e1914;
+      --paper: #f3ece1;
+      --paper-dim: #b7aea2;
+      --mute: #8d8478;
+      --rule: rgba(243, 236, 225, 0.14);
+      --cinnabar: #c43c2c;
+      --cinnabar-deep: #9e2e22;
+      --cinnabar-ink: #f7efe4;
+      --gap: clamp(1.25rem, 4vw, 3.5rem);
+      --serif-sc: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+      --serif-en: "Fraunces", "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+      --grotesk: "IBM Plex Sans", "Noto Sans SC", "Helvetica Neue", Helvetica, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; }
+    html { background: var(--ink); }
+
+    body {
+      margin: 0;
+      color: var(--paper);
+      background:
+        linear-gradient(180deg, rgba(196, 60, 44, 0.07), transparent 18%),
+        var(--ink);
+      font-family: var(--grotesk);
+      font-weight: 400;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    .page {
+      min-height: 100dvh;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      padding:
+        clamp(1.15rem, 3.2vh, 2.4rem)
+        clamp(1.15rem, 5vw, 4.5rem)
+        clamp(1rem, 2.6vh, 1.85rem);
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    /* Top binding rule — catalog, not chrome */
+    .page::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--cinnabar);
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1.25rem 2rem;
+      padding-bottom: 1.15rem;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .brand {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+      min-width: 0;
+    }
+
+    .seal {
+      flex: 0 0 auto;
+      width: 2.05rem;
+      height: 2.05rem;
+      display: grid;
+      place-items: center;
+      background: var(--cinnabar);
+      color: var(--cinnabar-ink);
+      font-family: var(--serif-sc);
+      font-weight: 700;
+      font-size: 1.05rem;
+      line-height: 1;
+      letter-spacing: 0;
+      box-shadow: 0 0 0 1px var(--cinnabar-deep);
+    }
+
+    .titles h1 {
+      margin: 0;
+      font-family: var(--serif-sc);
+      font-weight: 700;
+      font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+      letter-spacing: 0.18em;
+      line-height: 1.15;
+    }
+
+    .titles .en-title {
+      margin: 0.22rem 0 0;
+      font-family: var(--serif-en);
+      font-style: italic;
+      font-weight: 400;
+      font-size: 0.92rem;
+      color: var(--paper-dim);
+      letter-spacing: 0.04em;
+    }
+
+    .clock {
+      text-align: right;
+      min-width: 0;
+    }
+
+    .clock-label {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--mute);
+      margin-bottom: 0.38rem;
+    }
+
+    .clock-label .sep {
+      margin: 0 0.4em;
+      opacity: 0.55;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    time {
+      display: block;
+      color: var(--paper);
+    }
+
+    .clock-date {
+      display: block;
+      font-family: var(--serif-sc);
+      font-weight: 500;
+      font-size: clamp(0.92rem, 1.5vw, 1.05rem);
+      letter-spacing: 0.04em;
+      line-height: 1.35;
+    }
+
+    .clock-time {
+      display: block;
+      margin-top: 0.12rem;
+      font-family: var(--serif-en);
+      font-optical-sizing: auto;
+      font-weight: 500;
+      font-size: clamp(1.55rem, 3.2vw, 2.15rem);
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1, "ss01" 1;
+      letter-spacing: 0.06em;
+      line-height: 1.1;
+      color: var(--paper);
+    }
+
+    main {
+      display: grid;
+      place-items: center;
+      padding: clamp(1.5rem, 6vh, 4rem) 0;
+      min-width: 0;
+    }
+
+    .ling {
+      width: min(100%, 38rem);
+      display: flex;
+      align-items: flex-start;
+      gap: 1.15rem;
+      min-width: 0;
+    }
+
+    .ling-mark {
+      flex: 0 0 auto;
+      margin-top: 0.28rem;
+      width: 1.7rem;
+      height: 1.7rem;
+      border: 1px solid var(--cinnabar);
+      color: var(--cinnabar);
+      display: grid;
+      place-items: center;
+      font-family: var(--serif-sc);
+      font-weight: 700;
+      font-size: 0.82rem;
+      line-height: 1;
+    }
+
+    .ling-copy {
+      min-width: 0;
+      flex: 1;
+      clip-path: inset(0 0 0 0);
+      opacity: 1;
+      transform: translateY(0);
+      transition:
+        opacity 280ms ease,
+        clip-path 340ms cubic-bezier(0.22, 0.7, 0.2, 1),
+        transform 340ms cubic-bezier(0.22, 0.7, 0.2, 1);
+    }
+
+    .ling-copy.is-exit {
+      opacity: 0;
+      clip-path: inset(0 0 88% 0);
+      transform: translateY(-10px);
+    }
+
+    .ling-copy.is-enter {
+      opacity: 0;
+      clip-path: inset(88% 0 0 0);
+      transform: translateY(10px);
+      transition: none;
+    }
+
+    .ling-zh {
+      margin: 0;
+      font-family: var(--serif-sc);
+      font-weight: 600;
+      font-size: clamp(1.42rem, 3.1vw, 2.35rem);
+      line-height: 1.48;
+      letter-spacing: 0.03em;
+      color: var(--paper);
+    }
+
+    .ling-en {
+      margin: 0.7rem 0 0;
+      font-family: var(--serif-en);
+      font-style: italic;
+      font-weight: 400;
+      font-optical-sizing: auto;
+      font-size: clamp(0.95rem, 1.6vw, 1.18rem);
+      line-height: 1.45;
+      color: var(--paper-dim);
+    }
+
+    footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.15rem;
+      padding-top: 1.2rem;
+      border-top: 1px solid var(--rule);
+    }
+
+    .swap {
+      appearance: none;
+      -webkit-appearance: none;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.12rem;
+      min-height: 48px;
+      min-width: 11.5rem;
+      padding: 0.55rem 1.6rem 0.5rem;
+      margin: 0;
+      border: 0;
+      background: var(--cinnabar);
+      color: var(--cinnabar-ink);
+      cursor: pointer;
+      font-family: var(--serif-sc);
+      font-weight: 700;
+      font-size: 1.08rem;
+      letter-spacing: 0.28em;
+      line-height: 1.15;
+      text-indent: 0.28em;
+      box-shadow: 0 0 0 1px var(--cinnabar-deep);
+    }
+
+    .swap:hover {
+      background: #d04634;
+    }
+
+    .swap:active {
+      background: var(--cinnabar-deep);
+    }
+
+    .swap:focus {
+      outline: none;
+    }
+
+    .swap:focus-visible {
+      outline: 2px solid var(--paper);
+      outline-offset: 3px;
+    }
+
+    .swap .en {
+      font-family: var(--serif-en);
+      font-style: italic;
+      font-weight: 400;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-indent: 0;
+      color: rgba(247, 239, 228, 0.82);
+    }
+
+    .colophon {
+      margin: 0;
+      text-align: center;
+      font-size: 0.72rem;
+      line-height: 1.65;
+      letter-spacing: 0.04em;
+      color: var(--mute);
+    }
+
+    .colophon .zh {
+      display: block;
+      font-family: var(--serif-sc);
+      font-weight: 500;
+      color: var(--paper-dim);
+      letter-spacing: 0.18em;
+    }
+
+    .colophon .en {
+      display: block;
+      font-family: var(--grotesk);
+      font-weight: 400;
+      letter-spacing: 0.06em;
+    }
+
+    @media (max-width: 640px) {
+      header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.05rem;
+      }
+
+      .clock {
+        text-align: left;
+        padding-top: 0.15rem;
+      }
+
+      .ling {
+        gap: 0.85rem;
+      }
+
+      .swap {
+        width: min(100%, 22rem);
+        min-height: 52px;
+      }
+    }
+
+    @media (max-height: 560px) and (orientation: landscape) {
+      .page {
+        padding-top: 1rem;
+        padding-bottom: 0.75rem;
+      }
+      main { padding: 1rem 0; }
+      .clock-time { font-size: 1.35rem; }
+      .ling-zh { font-size: 1.28rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ling-copy,
+      .ling-copy.is-exit,
+      .ling-copy.is-enter {
+        transition: none;
+        clip-path: none;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="brand">
+        <span class="seal" aria-hidden="true">令</span>
+        <div class="titles">
+          <h1>今日令</h1>
+          <p class="en-title">Today's Order</p>
+        </div>
+      </div>
+      <div class="clock">
+        <span class="clock-label">上海时辰<span class="sep">/</span>Shanghai time</span>
+        <time id="board-time" datetime="">
+          <span class="clock-date" id="clock-date">——</span>
+          <span class="clock-time" id="clock-time">--:--:--</span>
+        </time>
+      </div>
+    </header>
+
+    <main>
+      <article class="ling" aria-live="polite" aria-atomic="true">
+        <span class="ling-mark" aria-hidden="true">令</span>
+        <div class="ling-copy" id="ling-copy">
+          <p class="ling-zh" id="ling-zh">阻塞 CEO 的事，今天必须关掉。</p>
+          <p class="ling-en" id="ling-en">Close what is blocking the CEO today. No carry-over.</p>
+        </div>
+      </article>
+    </main>
+
+    <footer>
+      <button class="swap" type="button" id="swap-btn" aria-label="换令 Next order">
+        换令
+        <span class="en">Next order</span>
+      </button>
+      <p class="colophon">
+        <span class="zh">核心管理团队</span>
+        <span class="en">Core Exec Team — CEO / CTO / QA / Coucou</span>
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var TZ = "Asia/Shanghai";
+
+      var LINES = [
+        { zh: "阻塞 CEO 的事，今天必须关掉。", en: "Close what is blocking the CEO today. No carry-over." },
+        { zh: "没有 QA 签字，功能不准上线。", en: "No ship without QA sign-off." },
+        { zh: "Coucou 卡住的连接器，今天打通。", en: "Unblock Coucou's connector work today." },
+        { zh: "把可点开的 URL 交到董事会桌上。", en: "Put a live URL on the board's desk." },
+        { zh: "Core Exec 只谈可验证的进度。", en: "Core Exec talks only in verified progress." },
+        { zh: "Grok Bot 今天只做会改变结果的事。", en: "Grok Bot does only work that changes the outcome today." },
+        { zh: "PR 不合标准，CTO 不合并。", en: "CTO does not merge PRs that fail the bar." },
+        { zh: "把秘密留在仓库外。", en: "Keep secrets out of the repo." },
+        { zh: "先交付可点开的东西，再写计划。", en: "Ship something clickable before writing a plan." },
+        { zh: "董事会只看现场，不看幻灯片。", en: "The board sees a live product, not slides." }
+      ];
+
+      var dateEl = document.getElementById("clock-date");
+      var timeEl = document.getElementById("clock-time");
+      var timeTag = document.getElementById("board-time");
+      var zhEl = document.getElementById("ling-zh");
+      var enEl = document.getElementById("ling-en");
+      var copyEl = document.getElementById("ling-copy");
+      var btn = document.getElementById("swap-btn");
+
+      var shanghaiParts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: TZ,
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+        hourCycle: "h23"
+      });
+
+      var weekdayFmt = new Intl.DateTimeFormat("zh-CN", {
+        timeZone: TZ,
+        weekday: "long"
+      });
+
+      function partsMap(date) {
+        var map = {};
+        shanghaiParts.formatToParts(date).forEach(function (p) {
+          if (p.type !== "literal") map[p.type] = p.value;
+        });
+        return map;
+      }
+
+      function pad2(value) {
+        return String(parseInt(value, 10)).padStart(2, "0");
+      }
+
+      function tick() {
+        var now = new Date();
+        var p = partsMap(now);
+        var year = p.year;
+        var month = String(parseInt(p.month, 10));
+        var day = String(parseInt(p.day, 10));
+        var hh = pad2(p.hour);
+        var mm = pad2(p.minute);
+        var ss = pad2(p.second);
+
+        dateEl.textContent = year + "年" + month + "月" + day + "日　" + weekdayFmt.format(now);
+        timeEl.textContent = hh + ":" + mm + ":" + ss;
+        timeTag.setAttribute(
+          "datetime",
+          year + "-" + pad2(p.month) + "-" + pad2(p.day) + "T" + hh + ":" + mm + ":" + ss + "+08:00"
+        );
+      }
+
+      var current = 0;
+      var busy = false;
+      var reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+      function pickNext(from) {
+        var next = from;
+        while (next === from) {
+          next = Math.floor(Math.random() * LINES.length);
+        }
+        return next;
+      }
+
+      function paint(index) {
+        zhEl.textContent = LINES[index].zh;
+        enEl.textContent = LINES[index].en;
+      }
+
+      function swap() {
+        if (busy) return;
+        var next = pickNext(current);
+
+        if (reduced.matches) {
+          current = next;
+          paint(current);
+          return;
+        }
+
+        busy = true;
+        copyEl.classList.remove("is-enter");
+        copyEl.classList.add("is-exit");
+
+        var finished = false;
+        function reveal() {
+          if (finished) return;
+          finished = true;
+          copyEl.removeEventListener("transitionend", onEnd);
+          current = next;
+          paint(current);
+          copyEl.classList.remove("is-exit");
+          copyEl.classList.add("is-enter");
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              copyEl.classList.remove("is-enter");
+              window.setTimeout(function () { busy = false; }, 340);
+            });
+          });
+        }
+
+        function onEnd(e) {
+          if (e.target !== copyEl) return;
+          reveal();
+        }
+
+        copyEl.addEventListener("transitionend", onEnd);
+        window.setTimeout(reveal, 400);
+      }
+
+      tick();
+      window.setInterval(tick, 1000);
+      btn.addEventListener("click", swap);
+    })();
+  </script>
+</body>
+</html>
